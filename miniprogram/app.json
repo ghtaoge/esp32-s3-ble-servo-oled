@@ -1,0 +1,12 @@
+{
+  "pages": ["pages/index/index"],
+  "window": {
+    "navigationBarTitleText": "蓝牙舵机控制",
+    "navigationBarBackgroundColor": "#10191a",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#10191a"
+  },
+  "permission": { "scope.bluetooth": { "desc": "连接你的 ESP32 舵机控制器并同步显示状态" } },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

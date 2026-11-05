@@ -1,0 +1,39 @@
+<view class="container">
+  <view class="eyebrow">ESP32-S3 · SG90 · OLED</view>
+  <view class="title">指尖控制舵机</view>
+  <view class="subtitle">蓝牙直连开发板，让小屏同步显示控制数据。</view>
+  <view class="card">
+    <view class="row"><view class="card-title">{{connected ? deviceName : '连接开发板'}}</view><text class="badge">{{connected ? '已连接' : '未连接'}}</text></view>
+    <view class="muted">{{connected ? (oledReady ? 'OLED 已检测到 · SDA 8 / SCL 9' : '未检测到 OLED，请检查接线后重启') : '给开发板供电，打开手机蓝牙后搜索'}}</view>
+    <button wx:if="{{!connected}}" class="primary" loading="{{scanning}}" disabled="{{scanning || !!connectingId}}" bindtap="search">{{scanning ? '正在搜索…' : '搜索开发板'}}</button>
+    <button wx:else class="secondary" disabled="{{sending}}" bindtap="disconnect">断开连接</button>
+    <block wx:if="{{!connected}}"><button wx:for="{{devices}}" wx:key="deviceId" class="device" data-id="{{item.deviceId}}" loading="{{connectingId === item.deviceId}}" disabled="{{!!connectingId}}" bindtap="connect">{{item.name}} · {{item.RSSI === null ? '--' : item.RSSI}} dBm</button></block>
+    <text class="link" bindtap="openSettings">蓝牙权限设置</text>
+  </view>
+  <view class="card">
+    <view class="row"><view class="card-title">逻辑角度</view><text class="badge">{{connected ? (enabled ? (moving ? '输出过渡中' : 'PWM 已开启') : 'PWM 已释放') : '连接后可控制'}}</text></view>
+    <view class="angle">{{angle}}<text class="degree">°</text></view>
+    <slider min="{{minAngle}}" max="{{maxAngle}}" step="1" value="{{angle}}" disabled="{{!connected || sending}}" activeColor="#b5edcb" backgroundColor="#40534b" block-color="#eef7f3" block-size="24" bindchanging="previewAngle" bindchange="changeAngle" />
+    <view class="row scale"><text>0°</text><text>90°</text><text>180°</text></view>
+    <view class="presets"><button class="secondary" data-angle="45" disabled="{{!connected || sending}}" bindtap="preset">45°</button><button class="primary" disabled="{{!connected || sending}}" bindtap="center">回中 90°</button><button class="secondary" data-angle="135" disabled="{{!connected || sending}}" bindtap="preset">135°</button></view>
+    <button class="release" disabled="{{!connected || !enabled || sending}}" loading="{{sending}}" bindtap="release">释放舵机 · 关闭 PWM</button>
+    <view class="muted">松开滑块后发送，调角会开启 PWM。启动时保持释放；释放只关闭 PWM，舵机仍供电。断开蓝牙也会自动释放。</view>
+    <view class="success" wx:if="{{syncText}}">{{syncText}}</view>
+  </view>
+  <view class="card">
+    <view class="card-title">开发板反馈</view>
+    <view wx:if="{{connected}}" class="metrics"><view><text class="metric-label">目标指令</text><text class="metric-value">{{target}}°</text></view><view><text class="metric-label">当前输出指令</text><text class="metric-value">{{enabled ? output + '°' : '已释放'}}</text></view><view><text class="metric-label">PWM 脉宽</text><text class="metric-value">{{pulse}} μs</text></view></view>
+    <view wx:else class="muted">连接后读取开发板状态，不会自动转动舵机。</view>
+    <view class="muted">SG90 无位置回传，当前输出指令不代表实测角度。{{minPulse}}–{{maxPulse}} μs 映射到 0–180° 逻辑刻度，实际行程由舵机决定。</view>
+  </view>
+  <view class="error" wx:if="{{errorText}}">{{errorText}}</view>
+  <view class="footer"><view>舵机信号 → GPIO4 · 独立 5V 供电并共地</view><view>OLED：3.3V · SDA → GPIO8 · SCL → GPIO9</view></view>
+  <view wx:if="{{showPrivacy}}" class="privacy-mask" catchtap="rejectPrivacy">
+    <view class="privacy-card" catchtap="ignorePrivacyTap">
+      <view class="card-title">连接前的小提示</view>
+      <view class="subtitle">我们使用蓝牙连接开发板，控制数据通过蓝牙发送，不上传服务器。请阅读并同意<text class="link" bindtap="openPrivacy">{{privacyName}}</text>。</view>
+      <button id="agree-privacy" class="primary" open-type="agreePrivacyAuthorization" bindtap="preparePrivacyAgree" bindagreeprivacyauthorization="agreePrivacy" loading="{{privacyAgreePending}}">同意并继续</button>
+      <button class="secondary" bindtap="rejectPrivacy">暂不连接</button>
+    </view>
+  </view>
+</view>
