@@ -42,11 +42,11 @@ constexpr bool acceptsAllLogicalAngles() {
   return true;
 }
 
-constexpr bool pulseRangeIsMonotonic() {
-  uint16_t previous = 1000;
+constexpr bool pulseRangeIsMonotonic(uint16_t minUs, uint16_t maxUs) {
+  uint16_t previous = minUs;
   for (uint16_t angle = 0; angle <= 180; ++angle) {
-    const uint16_t pulse = servo::pulseFor(angle, 1000, 2000);
-    if (pulse < previous || pulse < 1000 || pulse > 2000) return false;
+    const uint16_t pulse = servo::pulseFor(angle, minUs, maxUs);
+    if (pulse < previous || pulse < minUs || pulse > maxUs) return false;
     previous = pulse;
   }
   return true;
@@ -99,8 +99,11 @@ static_assert(resultFor(1, servo::Release, 0x0100) == servo::BadAngle, "Check bo
 static_assert(servo::pulseFor(0, 1000, 2000) == 1000, "Minimum pulse");
 static_assert(servo::pulseFor(90, 1000, 2000) == 1500, "Center pulse");
 static_assert(servo::pulseFor(180, 1000, 2000) == 2000, "Maximum pulse");
+static_assert(servo::pulseFor(0, 500, 2500) == 500, "180-degree SG90 minimum pulse");
+static_assert(servo::pulseFor(90, 500, 2500) == 1500, "180-degree SG90 center pulse");
+static_assert(servo::pulseFor(180, 500, 2500) == 2500, "180-degree SG90 maximum pulse");
 static_assert(servo::pulseFor(90, 600, 2400) == 1500, "Honor customized pulse calibration");
-static_assert(pulseRangeIsMonotonic(), "All default pulses must stay within the calibrated range");
+static_assert(pulseRangeIsMonotonic(500, 2500) && pulseRangeIsMonotonic(1000, 2000), "All pulses must stay within the calibrated range");
 static_assert(servo::stepToward(89, 90) == 90 && servo::stepToward(91, 90) == 90, "Do not overshoot one-degree moves");
 static_assert(everyMotionStepStaysBetweenCurrentAndTarget(), "Every pair of angles must step toward the target without overshoot");
 static_assert(convergesBothDirections(), "Full-range movement must stop exactly at either endpoint");

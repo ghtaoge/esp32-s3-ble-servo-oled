@@ -1,39 +1,59 @@
 <view class="container">
-  <view class="eyebrow">ESP32-S3 · SG90 · OLED</view>
-  <view class="title">指尖控制舵机</view>
-  <view class="subtitle">蓝牙直连开发板，让小屏同步显示控制数据。</view>
-  <view class="card">
-    <view class="row"><view class="card-title">{{connected ? deviceName : '连接开发板'}}</view><text class="badge">{{connected ? '已连接' : '未连接'}}</text></view>
-    <view class="muted">{{connected ? (oledReady ? 'OLED 已检测到 · SDA 8 / SCL 9' : '未检测到 OLED，请检查接线后重启') : '给开发板供电，打开手机蓝牙后搜索'}}</view>
-    <button wx:if="{{!connected}}" class="primary" loading="{{scanning}}" disabled="{{scanning || !!connectingId}}" bindtap="search">{{scanning ? '正在搜索…' : '搜索开发板'}}</button>
-    <button wx:else class="secondary" disabled="{{sending}}" bindtap="disconnect">断开连接</button>
-    <block wx:if="{{!connected}}"><button wx:for="{{devices}}" wx:key="deviceId" class="device" data-id="{{item.deviceId}}" loading="{{connectingId === item.deviceId}}" disabled="{{!!connectingId}}" bindtap="connect">{{item.name}} · {{item.RSSI === null ? '--' : item.RSSI}} dBm</button></block>
-    <text class="link" bindtap="openSettings">蓝牙权限设置</text>
+  <view class="page-heading">
+    <view><view class="eyebrow">SERVO CONTROL</view><view class="title">舵机控制台<text class="title-dot">.</text></view></view>
+    <view class="board-tag">S3<view class="board-tag-sub">BLUETOOTH</view></view>
   </view>
-  <view class="card">
-    <view class="row"><view class="card-title">逻辑角度</view><text class="badge">{{connected ? (enabled ? (moving ? '输出过渡中' : 'PWM 已开启') : 'PWM 已释放') : '连接后可控制'}}</text></view>
-    <view class="angle">{{angle}}<text class="degree">°</text></view>
-    <slider min="{{minAngle}}" max="{{maxAngle}}" step="1" value="{{angle}}" disabled="{{!connected || sending}}" activeColor="#b5edcb" backgroundColor="#40534b" block-color="#eef7f3" block-size="24" bindchanging="previewAngle" bindchange="changeAngle" />
-    <view class="row scale"><text>0°</text><text>90°</text><text>180°</text></view>
-    <view class="presets"><button class="secondary" data-angle="45" disabled="{{!connected || sending}}" bindtap="preset">45°</button><button class="primary" disabled="{{!connected || sending}}" bindtap="center">回中 90°</button><button class="secondary" data-angle="135" disabled="{{!connected || sending}}" bindtap="preset">135°</button></view>
-    <button class="release" disabled="{{!connected || !enabled || sending}}" loading="{{sending}}" bindtap="release">释放舵机 · 关闭 PWM</button>
-    <view class="muted">松开滑块后发送，调角会开启 PWM。启动时保持释放；释放只关闭 PWM，舵机仍供电。断开蓝牙也会自动释放。</view>
-    <view class="success" wx:if="{{syncText}}">{{syncText}}</view>
-  </view>
-  <view class="card">
-    <view class="card-title">开发板反馈</view>
-    <view wx:if="{{connected}}" class="metrics"><view><text class="metric-label">目标指令</text><text class="metric-value">{{target}}°</text></view><view><text class="metric-label">当前输出指令</text><text class="metric-value">{{enabled ? output + '°' : '已释放'}}</text></view><view><text class="metric-label">PWM 脉宽</text><text class="metric-value">{{pulse}} μs</text></view></view>
-    <view wx:else class="muted">连接后读取开发板状态，不会自动转动舵机。</view>
-    <view class="muted">SG90 无位置回传，当前输出指令不代表实测角度。{{minPulse}}–{{maxPulse}} μs 映射到 0–180° 逻辑刻度，实际行程由舵机决定。</view>
-  </view>
-  <view class="error" wx:if="{{errorText}}">{{errorText}}</view>
-  <view class="footer"><view>舵机信号 → GPIO4 · 独立 5V 供电并共地</view><view>OLED：3.3V · SDA → GPIO8 · SCL → GPIO9</view></view>
-  <view wx:if="{{showPrivacy}}" class="privacy-mask" catchtap="rejectPrivacy">
-    <view class="privacy-card" catchtap="ignorePrivacyTap">
-      <view class="card-title">连接前的小提示</view>
-      <view class="subtitle">我们使用蓝牙连接开发板，控制数据通过蓝牙发送，不上传服务器。请阅读并同意<text class="link" bindtap="openPrivacy">{{privacyName}}</text>。</view>
-      <button id="agree-privacy" class="primary" open-type="agreePrivacyAuthorization" bindtap="preparePrivacyAgree" bindagreeprivacyauthorization="agreePrivacy" loading="{{privacyAgreePending}}">同意并继续</button>
-      <button class="secondary" bindtap="rejectPrivacy">暂不连接</button>
+
+  <view class="connection {{connected ? 'is-connected' : ''}}">
+    <view class="connection-top">
+      <view class="connection-info"><view class="status-dot {{connected ? 'online' : (scanning || connectingId ? 'searching' : '')}}"></view><view class="connection-copy"><view class="device-name">{{connected ? deviceName : (connectingId ? '正在连接开发板' : '连接你的开发板')}}</view><view class="caption">{{connected ? '蓝牙已连接 · 可以开始调节' : (scanning ? '正在寻找附近的舵机控制器…' : '打开手机蓝牙，靠近已供电的开发板')}}</view></view></view>
+      <button wx:if="{{connected}}" class="text-button" bindtap="disconnect">断开</button>
+      <button wx:elif="{{scanning}}" class="text-button" bindtap="stopSearch">停止</button>
+      <button wx:else class="connect-button" loading="{{!!connectingId}}" disabled="{{!!connectingId}}" bindtap="search">{{connectingId ? '连接中' : '搜索设备'}}</button>
+    </view>
+    <view wx:if="{{!connected}}" class="discovery">
+      <button wx:for="{{devices}}" wx:key="deviceId" class="device-item" data-id="{{item.deviceId}}" loading="{{connectingId === item.deviceId}}" disabled="{{!!connectingId}}" bindtap="connect"><view class="device-item-copy"><text class="device-item-name">{{item.name}}</text><text class="caption">{{item.RSSI === null ? '信号未知' : (item.RSSI > -65 ? '信号良好' : (item.RSSI > -85 ? '信号一般' : '请靠近设备'))}}</text></view><text class="device-connect">连接 →</text></button>
+      <view wx:if="{{scanFinished && !scanning && !connectingId && !devices.length}}" class="empty-hint">未发现设备，请确认开发板已供电，再重新搜索。</view>
+      <view class="discovery-footer"><text class="caption">{{devices.length ? '点击设备即可连接' : '仅显示兼容的舵机控制器'}}</text><button class="text-button small" bindtap="openSettings">权限设置</button></view>
     </view>
   </view>
+
+  <view wx:if="{{errorText}}" class="notice error" role="alert"><text class="notice-mark">!</text><text>{{errorText}}</text></view>
+
+  <view class="control-card {{!connected ? 'control-offline' : ''}}">
+    <view class="section-heading"><text class="card-title">目标角度</text><view class="mode-badge {{connected && enabled ? 'active' : ''}}">{{!connected ? '等待连接' : (sending ? '正在发送' : (enabled ? (moving ? '指令过渡中' : 'PWM 保持中') : '已释放'))}}</view></view>
+    <view class="dial" aria-hidden="true">
+      <view class="dial-ring"></view><view class="dial-inner"></view>
+      <view class="dial-tick tick-left"></view><view class="dial-tick tick-top"></view><view class="dial-tick tick-right"></view>
+      <text class="dial-label label-left">0</text><text class="dial-label label-top">90</text><text class="dial-label label-right">180</text>
+      <view class="dial-arm" style="transform: rotate({{angle - 90}}deg)"><view class="dial-marker"></view><view class="dial-line"></view></view>
+      <view class="dial-readout"><text class="angle">{{angle}}</text><text class="degree">°</text><view class="dial-caption">{{connected ? '目标位置' : '连接后可调节'}}</view></view>
+    </view>
+    <slider aria-label="目标角度，松手后发送" min="{{minAngle}}" max="{{maxAngle}}" step="1" value="{{angle}}" disabled="{{!connected || sending}}" activeColor="#83aaff" backgroundColor="#303d50" block-color="#83aaff" block-size="24" bindchanging="previewAngle" bindchange="changeAngle" />
+    <view class="slider-labels"><text>0°</text><text>松手发送指令</text><text>180°</text></view>
+    <view class="presets">
+      <button class="preset {{connected && enabled && target === 0 ? 'selected' : ''}}" data-angle="0" disabled="{{!connected || sending}}" bindtap="preset">0°</button>
+      <button class="preset {{connected && enabled && target === 45 ? 'selected' : ''}}" data-angle="45" disabled="{{!connected || sending}}" bindtap="preset">45°</button>
+      <button class="preset center-preset {{connected && enabled && target === 90 ? 'selected' : ''}}" disabled="{{!connected || sending}}" bindtap="center">90°<text class="preset-sub">回中</text></button>
+      <button class="preset {{connected && enabled && target === 135 ? 'selected' : ''}}" data-angle="135" disabled="{{!connected || sending}}" bindtap="preset">135°</button>
+      <button class="preset {{connected && enabled && target === 180 ? 'selected' : ''}}" data-angle="180" disabled="{{!connected || sending}}" bindtap="preset">180°</button>
+    </view>
+    <view class="feedback-line"><view class="feedback-dot {{connected ? 'online' : ''}}"></view><text>{{!connected ? '连接不会自动转动舵机' : (sending ? '正在等待开发板确认…' : (syncText || '先回中，再测试两端行程'))}}</text></view>
+    <button class="fold-button" bindtap="toggleFineTune"><text>精细调节</text><text class="fold-action">{{fineTuneOpen ? '收起 −' : '展开 ＋'}}</text></button>
+    <view wx:if="{{fineTuneOpen}}" class="fine-tune">
+      <view class="step-heading"><text class="caption">每次调节</text><view class="step-options"><button wx:for="{{[1, 5, 10]}}" wx:key="*this" class="step-option {{stepSize === item ? 'selected' : ''}}" data-step="{{item}}" bindtap="chooseStep">{{item}}°</button></view></view>
+      <view class="nudge-row"><button class="nudge" data-direction="-1" disabled="{{!connected || sending || angle <= minAngle}}" bindtap="nudge">− {{stepSize}}°</button><text class="caption">小步调整位置</text><button class="nudge" data-direction="1" disabled="{{!connected || sending || angle >= maxAngle}}" bindtap="nudge">＋ {{stepSize}}°</button></view>
+      <view class="angle-entry"><input type="number" value="{{angleInput}}" placeholder="输入 0–180" placeholder-class="input-placeholder" maxlength="3" disabled="{{!connected || sending}}" confirm-type="send" bindinput="editAngle" bindconfirm="submitAngle" aria-label="准确角度" /><text class="input-unit">度</text><button class="send-button" disabled="{{!connected || sending || angleInput === ''}}" bindtap="submitAngle">转到该角度</button></view>
+    </view>
+  </view>
+
+  <view class="telemetry"><view><text class="metric-label">当前输出指令</text><view class="metric-value">{{connected && enabled ? output : '—'}}<text class="metric-unit">{{connected && enabled ? '°' : ''}}</text></view></view><view class="metric-divider"></view><view><text class="metric-label">PWM 脉宽</text><view class="metric-value">{{connected ? pulse : '—'}}<text class="metric-unit">μs</text></view></view><view class="metric-divider"></view><view><text class="metric-label">OLED 屏幕</text><view class="metric-value screen-value">{{!connected ? '—' : (oledReady ? '已就绪' : '未检测到')}}</view></view></view>
+  <view class="position-note">显示的是控制指令，SG90 不回传实际位置。</view>
+
+  <view class="details-card"><button class="fold-button" bindtap="toggleDetails"><text>使用与接线说明</text><text class="fold-action">{{detailsOpen ? '收起 −' : '查看 ＋'}}</text></button><view wx:if="{{detailsOpen}}" class="details-body"><view class="help-title">先回中，再测行程</view><view class="help-text">先点 90°，再分别测试 0° 和 180°。从 90° 转到 180°，只转 90° 是正常的；完整行程要比较 0° 与 180° 两个位置。</view><view class="help-title">角度与实际位置</view><view class="help-text">当前标定 {{minPulse}}–{{maxPulse}} μs 对应 0–180°，实际行程取决于舵机。端点若持续嗡鸣或顶住，请立即释放并重新校准。释放仅关闭控制信号，不切断供电。</view><view class="help-title">接线速查</view><view class="wiring-row"><text>舵机信号</text><text>GPIO4</text></view><view class="wiring-row"><text>舵机电源</text><text>独立 5V · 与开发板共地</text></view><view class="wiring-row"><text>OLED</text><text>3.3V · SDA 8 · SCL 9</text></view><view class="help-text">上电和蓝牙断开时自动释放。屏幕未接好时，仍可控制舵机；修好接线后重启开发板。</view></view></view>
+  <view class="footer">ESP32-S3 · 本地蓝牙直连</view>
+
+  <view class="bottom-bar"><view class="bottom-status"><view class="status-dot {{connected ? 'online' : ''}}"></view><view><view class="bottom-title">{{!connected ? '设备未连接' : (sending ? '指令发送中' : (enabled ? '舵机输出中' : '舵机已释放'))}}</view><view class="bottom-caption">{{connected && enabled ? '释放后停止 PWM 输出' : '发送角度指令后开启输出'}}</view></view></view><button class="release" disabled="{{!connected || !enabled || sending}}" bindtap="release"><view class="stop-symbol"></view>释放舵机</button></view>
+
+  <view wx:if="{{showPrivacy}}" class="privacy-mask" catchtap="rejectPrivacy"><view class="privacy-card" catchtap="ignorePrivacyTap"><view class="privacy-icon">↔</view><view class="card-title">允许蓝牙连接</view><view class="help-text">通过蓝牙连接你的开发板，控制数据仅在手机与设备之间传输，不上传服务器。</view><text class="privacy-link" bindtap="openPrivacy">阅读{{privacyName}}</text><button id="agree-privacy" class="primary" open-type="agreePrivacyAuthorization" bindtap="preparePrivacyAgree" bindagreeprivacyauthorization="agreePrivacy" loading="{{privacyAgreePending}}">同意并连接</button><button class="text-button privacy-cancel" bindtap="rejectPrivacy">暂不连接</button></view></view>
 </view>

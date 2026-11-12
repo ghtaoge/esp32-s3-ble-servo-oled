@@ -49,3 +49,24 @@ test('compiled privacy dialog binds the native authorization event', options, ()
   assert.equal(agree.attr.openType, 'agreePrivacyAuthorization');
   assert.equal(agree.attr.bindagreeprivacyauthorization, 'agreePrivacy');
 });
+
+
+test('endpoint shortcuts and fine adjustment reflect connection, bounds, and sending state', options, () => {
+  const preset = (tree, angle) => find(tree, node => node.attr && node.attr['data-angle'] === String(angle));
+  const nudge = (tree, direction) => find(tree, node => node.attr && node.attr['data-direction'] === String(direction));
+  let tree = render({ ...base, fineTuneOpen: true, stepSize: 5, angleInput: '0' });
+  assert.ok(preset(tree, 0).attr.disabled);
+  assert.ok(preset(tree, 180).attr.disabled);
+  assert.ok(nudge(tree, 1).attr.disabled);
+  assert.ok(button(tree, 'submitAngle').attr.disabled);
+  tree = render({ ...base, fineTuneOpen: true, connected: true, enabled: true, angle: 0, target: 0, stepSize: 5, angleInput: '0' });
+  assert.ok(nudge(tree, -1).attr.disabled);
+  assert.equal(!!nudge(tree, 1).attr.disabled, false);
+  assert.equal(!!button(tree, 'submitAngle').attr.disabled, false, 'zero is a valid input');
+  assert.match(preset(tree, 0).attr.class, /selected/);
+  tree = render({ ...base, fineTuneOpen: true, connected: true, enabled: true, angle: 180, stepSize: 5, sending: true, angleInput: '90' });
+  assert.ok(nudge(tree, 1).attr.disabled);
+  assert.ok(button(tree, 'submitAngle').attr.disabled);
+  assert.ok(preset(tree, 180).attr.disabled);
+  assert.equal(!!button(tree, 'disconnect').attr.disabled, false, 'disconnect stays available during a pending command');
+});

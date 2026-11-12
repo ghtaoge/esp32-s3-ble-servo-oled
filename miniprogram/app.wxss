@@ -1,33 +1,85 @@
-page { background: #10191a; color: #eef7f3; font-size: 28rpx; }
-button { border-radius: 18rpx; font-size: 28rpx; margin-top: 20rpx; }
-button::after { border: none; }
-button[disabled] { opacity: .45; }
-.container { padding: 52rpx 32rpx 64rpx; }
-.eyebrow { color: #a6debf; font-size: 22rpx; letter-spacing: 3rpx; }
-.title { font-size: 48rpx; font-weight: 700; margin-top: 18rpx; }
-.subtitle { color: #adbfba; line-height: 1.8; margin: 20rpx 0 30rpx; }
-.card { background: #1c2929; border: 1rpx solid #344441; padding: 30rpx; border-radius: 26rpx; margin-top: 28rpx; }
-.row { display: flex; justify-content: space-between; align-items: center; }
-.card-title { font-size: 31rpx; font-weight: 600; }
-.muted { color: #adbfba; font-size: 24rpx; line-height: 1.8; margin-top: 16rpx; }
-.badge { color: #a6debf; font-size: 22rpx; white-space: nowrap; margin-left: 12rpx; }
-.primary { background: #b5edcb; color: #10291d; font-weight: 600; }
-.secondary, .device { background: #30423e; color: #e4f3eb; }
-.release { background: #3b322c; color: #f4c79a; }
-.link { color: #b5edcb; display: inline-block; margin-top: 20rpx; font-size: 24rpx; }
-.angle { font-size: 104rpx; font-weight: 600; text-align: center; padding: 24rpx 0 8rpx; line-height: 1.3; }
-.degree { font-size: 44rpx; color: #a6debf; margin-left: 6rpx; }
-slider { margin: 24rpx 12rpx 18rpx; }
-.scale { color: #adbfba; font-size: 22rpx; margin: 0 8rpx; }
-.presets { display: flex; margin: 4rpx -6rpx 0; }
-.presets button { flex: 1; padding: 0 6rpx; margin-left: 6rpx; margin-right: 6rpx; font-size: 26rpx; }
-.metrics { display: flex; justify-content: space-between; margin-top: 24rpx; }
-.metrics > view { width: 33%; }
-.metric-label, .metric-value { display: block; }
-.metric-label { color: #adbfba; font-size: 21rpx; }
-.metric-value { font-size: 31rpx; margin-top: 10rpx; font-weight: 600; }
-.error { color: #ffb5a7; padding: 24rpx; line-height: 1.7; }
-.success { margin-top: 20rpx; color: #b5edcb; font-size: 25rpx; }
-.footer { text-align: center; color: #91aaa0; font-size: 22rpx; line-height: 1.9; margin-top: 36rpx; }
-.privacy-mask { position: fixed; inset: 0; background: rgba(0,0,0,.75); display: flex; align-items: center; justify-content: center; z-index: 100; }
-.privacy-card { width: 580rpx; box-sizing: border-box; padding: 36rpx; border-radius: 24rpx; background: #1c2929; }
+page { background: #101318; color: #e5ebf4; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 28rpx; }
+view, button, input { box-sizing: border-box; }
+button { margin: 0; padding: 0; border-radius: 16rpx; font-size: 26rpx; font-weight: 600; line-height: 1.4; }
+button::after { border: 0; }
+button[disabled] { opacity: 1; background: #202731; color: #8492a6; box-shadow: none; }
+button:not([disabled]):active { opacity: .72; }
+.container { max-width: 900rpx; margin: 0 auto; padding: 32rpx 32rpx calc(170rpx + env(safe-area-inset-bottom)); }
+.page-heading { display: flex; align-items: center; justify-content: space-between; margin: 8rpx 4rpx 32rpx; }
+.eyebrow { color: #8f9db1; font-size: 18rpx; font-weight: 700; letter-spacing: 4rpx; }
+.title { font-size: 46rpx; font-weight: 750; letter-spacing: -2rpx; margin-top: 8rpx; }
+.title-dot { color: #83aaff; margin-left: 4rpx; }
+.board-tag { text-align: center; border: 1rpx solid #303946; border-radius: 18rpx; padding: 13rpx 16rpx; font-size: 32rpx; font-weight: 750; background: #1a2028; }
+.board-tag-sub { font-size: 10rpx; letter-spacing: 1rpx; color: #96a4b8; margin-top: 2rpx; }
+.connection { border: 1rpx solid #303946; border-radius: 24rpx; background: #1a2028; padding: 26rpx; }
+.connection.is-connected { background: #182b27; border-color: #2b4941; }
+.connection-top, .connection-info { display: flex; align-items: center; }
+.connection-top { justify-content: space-between; gap: 16rpx; }
+.connection-info { min-width: 0; flex: 1; }
+.connection-copy { min-width: 0; }
+.status-dot { flex-shrink: 0; width: 13rpx; height: 13rpx; border-radius: 50%; background: #718096; margin-right: 18rpx; }
+.status-dot.online, .feedback-dot.online { background: #64d7b0; }
+.status-dot.searching { background: #83aaff; animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+.device-name { font-size: 26rpx; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.caption { font-size: 21rpx; color: #9ba8ba; font-weight: 400; line-height: 1.6; }
+.connection .caption { font-size: 20rpx; margin-top: 4rpx; }
+.connect-button { background: #83aaff; color: #1a2028; padding: 18rpx 22rpx; font-size: 23rpx; flex-shrink: 0; }
+.text-button { background: transparent; color: #a5b2c4; font-size: 23rpx; padding: 14rpx 0 14rpx 16rpx; flex-shrink: 0; }
+.small { font-size: 21rpx; }
+.discovery:empty { display: none; }
+.discovery-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14rpx; border-top: 1rpx solid #2c3542; padding-top: 10rpx; }
+.device-item { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 22rpx 20rpx; margin-top: 16rpx; background: #222b37; text-align: left; }
+.device-item-copy { min-width: 0; display: flex; flex-direction: column; }
+.device-item-name { font-size: 24rpx; overflow: hidden; text-overflow: ellipsis; }
+.device-connect { font-size: 23rpx; color: #83aaff; margin-left: 16rpx; white-space: nowrap; }
+.empty-hint { font-size: 23rpx; color: #8f9db1; line-height: 1.7; padding-top: 20rpx; }
+.notice { display: flex; align-items: center; gap: 16rpx; padding: 20rpx 24rpx; border-radius: 18rpx; margin-top: 20rpx; font-size: 23rpx; line-height: 1.6; }
+.error { background: #382a22; color: #f3a39a; }
+.notice-mark { border: 2rpx solid currentColor; border-radius: 50%; width: 30rpx; height: 30rpx; text-align: center; line-height: 26rpx; flex-shrink: 0; font-weight: 700; }
+.control-card { background: #1a2028; border: 1rpx solid #303946; border-radius: 30rpx; padding: 28rpx 28rpx 0; margin-top: 22rpx; box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, .16); overflow: hidden; }
+.section-heading { display: flex; justify-content: space-between; align-items: center; }
+.card-title { font-size: 28rpx; font-weight: 700; }
+.mode-badge { font-size: 20rpx; color: #9ba8ba; padding: 8rpx 14rpx; border-radius: 10rpx; background: #242c37; }
+.mode-badge.active { color: #83aaff; background: #24344f; }
+.dial { width: 500rpx; max-width: 100%; height: 266rpx; margin: 22rpx auto 0; position: relative; overflow: hidden; }
+.dial-ring { position: absolute; width: 440rpx; height: 440rpx; border: 22rpx solid #2b3544; border-radius: 50%; top: 28rpx; left: 50%; margin-left: -220rpx; }
+.dial-inner { position: absolute; width: 372rpx; height: 372rpx; border: 1rpx dashed #3d4a5d; border-radius: 50%; top: 62rpx; left: 50%; margin-left: -186rpx; }
+.dial-tick { position: absolute; background: #4c5b70; width: 2rpx; height: 14rpx; }
+.tick-top { top: 34rpx; left: 50%; }.tick-left { top: 238rpx; left: 36rpx; width: 14rpx; height: 2rpx; }.tick-right { top: 238rpx; right: 36rpx; width: 14rpx; height: 2rpx; }
+.dial-label { position: absolute; font-size: 18rpx; color: #95a2b5; font-weight: 500; }.label-top { top: 0; left: 50%; transform: translateX(-50%); }.label-left { bottom: 4rpx; left: 0; }.label-right { bottom: 4rpx; right: 0; }
+.dial-arm { position: absolute; height: 214rpx; width: 24rpx; left: 50%; margin-left: -12rpx; bottom: 18rpx; transform-origin: 50% 100%; }
+.dial-marker { width: 24rpx; height: 24rpx; border-radius: 50%; background: #83aaff; border: 5rpx solid #1a2028; box-shadow: 0 0 0 5rpx #83aaff; }
+.dial-line { width: 2rpx; height: 54rpx; margin: 12rpx auto; background: linear-gradient(#83aaff, #283b5c); }
+.dial-readout { position: absolute; bottom: 8rpx; left: 50%; transform: translateX(-50%); text-align: center; background: #1a2028; min-width: 220rpx; padding: 10rpx; border-radius: 80rpx; white-space: nowrap; }
+.angle { font-size: 100rpx; letter-spacing: -5rpx; line-height: 1.05; font-weight: 650; font-variant-numeric: tabular-nums; }.degree { font-size: 36rpx; vertical-align: top; margin: 8rpx 0 0 9rpx; display: inline-block; color: #a6b3c6; }
+.dial-caption { font-size: 20rpx; color: #95a2b5; margin-top: 12rpx; }
+.control-offline .dial-marker { background: #63738a; box-shadow: 0 0 0 5rpx #63738a; }.control-offline .dial-line { opacity: .3; }
+slider { margin: 24rpx 8rpx 8rpx; }
+.slider-labels { display: flex; justify-content: space-between; font-size: 20rpx; color: #95a2b5; margin: 14rpx 8rpx 22rpx; }
+.presets { display: flex; gap: 12rpx; align-items: stretch; }
+.preset { flex: 1; min-width: 0; background: #242c37; color: #b0bdcf; height: 86rpx; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 26rpx; border: 1rpx solid transparent; }
+.preset.selected { color: #83aaff; background: #24344f; border-color: #486da5; }.center-preset { color: #83aaff; }.preset-sub { font-size: 17rpx; margin-top: 2rpx; font-weight: 400; }
+.feedback-line { display: flex; align-items: center; justify-content: center; min-height: 76rpx; font-size: 21rpx; color: #9ba8ba; padding: 12rpx 0; }.feedback-dot { width: 8rpx; height: 8rpx; border-radius: 50%; background: #65758c; margin-right: 12rpx; flex-shrink: 0; }
+.fold-button { width: 100%; background: transparent; display: flex; justify-content: space-between; align-items: center; padding: 23rpx 0; border-radius: 0; font-size: 24rpx; color: #c1ccdb; border-top: 1rpx solid #2c3542; text-align: left; }.fold-action { color: #96a4b8; font-size: 21rpx; font-weight: 400; }
+.fine-tune { border-top: 1rpx solid #2c3542; padding: 24rpx 0 28rpx; }.step-heading { display: flex; justify-content: space-between; align-items: center; }.step-options { display: flex; background: #131922; padding: 5rpx; border-radius: 12rpx; gap: 4rpx; }.step-option { padding: 9rpx 24rpx; font-size: 22rpx; background: transparent; color: #9ba8ba; border-radius: 9rpx; }.step-option.selected { background: #1a2028; color: #83aaff; box-shadow: 0 2rpx 8rpx #10151e; }.nudge-row { display: flex; justify-content: space-between; align-items: center; margin: 20rpx 0; gap: 12rpx; }.nudge { background: #24344f; color: #83aaff; width: 174rpx; padding: 22rpx 0; font-size: 30rpx; }.angle-entry { display: flex; align-items: center; background: #141b24; border-radius: 16rpx; padding: 8rpx; }.angle-entry input { flex: 1; min-width: 0; font-size: 25rpx; padding-left: 16rpx; height: 66rpx; }.input-unit { font-size: 23rpx; color: #9ba8ba; margin: 0 18rpx 0 6rpx; }.send-button { background: #83aaff; color: #1a2028; padding: 20rpx; font-size: 23rpx; }
+.telemetry { display: flex; align-items: center; justify-content: space-between; padding: 32rpx 10rpx 18rpx; }.telemetry > view:not(.metric-divider) { flex: 1; text-align: center; }.metric-label { font-size: 19rpx; color: #9ba8ba; }.metric-value { margin-top: 12rpx; font-size: 34rpx; font-weight: 600; font-variant-numeric: tabular-nums; }.metric-unit { font-size: 20rpx; color: #95a2b5; margin-left: 6rpx; font-weight: 400; }.metric-divider { width: 1rpx; height: 45rpx; background: #303946; }.screen-value { font-size: 25rpx; line-height: 44rpx; }.position-note { text-align: center; font-size: 20rpx; color: #8b99ae; margin-bottom: 26rpx; }
+.details-card { border: 1rpx solid #303946; border-radius: 20rpx; padding: 0 24rpx; }.details-card > .fold-button { border: none; }.details-body { border-top: 1rpx solid #303946; padding-bottom: 24rpx; }.help-title { font-size: 24rpx; font-weight: 600; margin-top: 25rpx; }.help-text { color: #9ba8ba; font-size: 23rpx; line-height: 1.9; margin-top: 12rpx; }.wiring-row { display: flex; justify-content: space-between; font-size: 22rpx; padding: 18rpx 0; border-bottom: 1rpx solid #303d50; color: #a5b2c4; }.footer { text-align: center; font-size: 18rpx; color: #8190a4; padding-top: 24rpx; letter-spacing: 1rpx; }
+.bottom-bar { position: fixed; z-index: 10; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; background: rgba(19,24,31,.98); border-top: 1rpx solid #303946; padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom)); }.bottom-status { display: flex; align-items: center; }.bottom-title { font-size: 24rpx; font-weight: 600; }.bottom-caption { font-size: 19rpx; color: #95a2b5; margin-top: 5rpx; }.release { background: #382a22; color: #f0ad72; padding: 23rpx 30rpx; display: flex; align-items: center; justify-content: center; font-size: 25rpx; border: 1rpx solid #654932; }.stop-symbol { width: 16rpx; height: 16rpx; border-radius: 3rpx; background: #f0ad72; margin-right: 12rpx; }
+.privacy-mask { position: fixed; z-index: 30; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 44rpx; }.privacy-card { width: 100%; max-width: 620rpx; padding: 40rpx; border-radius: 30rpx; background: #1a2028; }.privacy-icon { background: #24344f; color: #83aaff; width: 84rpx; height: 84rpx; line-height: 84rpx; text-align: center; font-size: 46rpx; border-radius: 22rpx; margin-bottom: 28rpx; }.privacy-card .card-title { font-size: 34rpx; }.privacy-link { display: block; font-size: 23rpx; color: #83aaff; margin: 20rpx 0 30rpx; }.primary { width: 100%; padding: 24rpx; background: #83aaff; color: #1a2028; }.privacy-cancel { width: 100%; padding: 26rpx 0 0; }
+
+/* Solid action fills keep labels readable on the dark surfaces. */
+.connect-button, .send-button, .primary { background: #315fc0; color: #f0f4ff; }
+.angle-entry input { color: #e5ebf4; }
+.input-placeholder { color: #8190a4; }
+
+/* Explicit component selectors also override WeChat's native disabled fills. */
+button.preset[disabled] { background: #1e2631; color: #8b9ab0; border-color: #303c4d; }
+button.preset[disabled] .preset-sub { color: #7e8da3; }
+button.nudge[disabled] { background: #1e2939; color: #8799b5; border: 1rpx solid #324259; }
+button.release[disabled] { background: #1d252f; color: #8b99ac; border-color: #354151; }
+button.release[disabled] .stop-symbol { background: #7e8da2; }
+button.send-button[disabled], button.connect-button[disabled], button.primary[disabled] { background: #25334a; color: #94a7c6; }
+button.device-item[disabled] { background: #1e2631; color: #8b9ab0; }
+button.device-item[disabled] .device-connect { color: #8b9ab0; }
+.angle-entry input[disabled] { color: #8492a6; }

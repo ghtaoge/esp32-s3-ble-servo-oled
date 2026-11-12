@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const path = require('node:path');
 const initial = { target: 90, output: 90, pulse: 0, enabled: false, moving: false, oledReady: false,
-  minAngle: 0, maxAngle: 180, minPulse: 1000, maxPulse: 2000 };
+  minAngle: 0, maxAngle: 180, minPulse: 500, maxPulse: 2500 };
 function fakeClock() {
   let now = 0, next = 0;
   const timers = new Map();
@@ -285,5 +285,68 @@ test('scan errors and late device discoveries cannot change a connected page', a
     assert.equal(page.data.connected, true);
     assert.equal(page.data.errorText, '');
     assert.equal(updates.length, before);
+  } finally { page.onUnload(); }
+});
+
+
+test('fine adjustment clamps to endpoints and never sends while disconnected or busy', async () => {
+  const { page, client } = fixture();
+  const event = value => ({ currentTarget: { dataset: { direction: value } } });
+  try {
+    await page.nudge(event(1));
+    assert.deepEqual(client.angles, []);
+    await connect(page);
+    page.chooseStep({ currentTarget: { dataset: { step: '10' } } });
+    page.data.angle = 178;
+    await page.nudge(event(1));
+    assert.deepEqual(client.angles, [180]);
+    await page.nudge(event(1));
+    assert.deepEqual(client.angles, [180], 'endpoint must not queue redundant commands');
+    page.data.angle = 3;
+    await page.nudge(event(-1));
+    assert.deepEqual(client.angles, [180, 0]);
+    page.chooseStep({ currentTarget: { dataset: { step: '0' } } });
+    assert.equal(page.data.stepSize, 10);
+    page.data.sending = true;
+    await page.nudge(event(1));
+    assert.deepEqual(client.angles, [180, 0]);
+  } finally { page.onUnload(); }
+});
+
+test('exact angle input rejects invalid values, accepts zero, and only sends on submit', async () => {
+  const { page, client } = fixture();
+  try {
+    await connect(page);
+    for (const value of ['', ' ', '-1', '181', '1.5', 'NaN', '1e2']) {
+      page.editAngle({ detail: { value } });
+      await page.submitAngle();
+      assert.match(page.data.errorText, /请输入/);
+    }
+    assert.deepEqual(client.angles, []);
+    page.editAngle({ detail: { value: '0' } });
+    assert.deepEqual(client.angles, [], 'typing must not move the servo');
+    await page.submitAngle();
+    assert.deepEqual(client.angles, [0]);
+    page.editAngle({ detail: { value: '180' } });
+    await page.submitAngle();
+    assert.deepEqual(client.angles, [0, 180]);
+    assert.equal(page.data.errorText, '');
+  } finally { page.onUnload(); }
+});
+
+test('stopping discovery suppresses late devices and errors from that search', async () => {
+  const { page, client } = fixture();
+  let rejectScan;
+  try {
+    client.scan = () => new Promise((resolve, reject) => { rejectScan = reject; });
+    const search = page.search();
+    await page.stopSearch();
+    client.events.onDevice({ deviceId: 'late', name: 'S3-SERVO-LATE', RSSI: -40 });
+    rejectScan(new Error('old search error'));
+    await search;
+    assert.equal(page.data.scanning, false);
+    assert.equal(page.data.scanFinished, true);
+    assert.equal(page.data.devices.length, 0);
+    assert.equal(page.data.errorText, '');
   } finally { page.onUnload(); }
 });

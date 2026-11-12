@@ -3,8 +3,9 @@ Page({
   data: {
     connected: false, scanning: false, connectingId: '', devices: [], deviceName: '',
     angle: 90, target: 90, output: 90, pulse: 0, enabled: false, moving: false,
-    minAngle: 0, maxAngle: 180, minPulse: 1000, maxPulse: 2000,
+    minAngle: 0, maxAngle: 180, minPulse: 500, maxPulse: 2500,
     oledReady: false, sending: false, syncText: '', errorText: '',
+    stepSize: 5, angleInput: '', fineTuneOpen: false, detailsOpen: false, scanFinished: false,
     showPrivacy: false, privacyAgreePending: false, privacyName: '《用户隐私保护指引》'
   },
   onLoad() {
@@ -24,7 +25,7 @@ Page({
         devices.sort((a, b) => (typeof b.RSSI === 'number' ? b.RSSI : -127) - (typeof a.RSSI === 'number' ? a.RSSI : -127));
         this.update({ devices });
       },
-      onScanEnd: () => this.update({ scanning: false }),
+      onScanEnd: () => this.update({ scanning: false, scanFinished: true }),
       onState: state => this.showState(state),
       onConnection: (connected, device) => {
         if (this.unloaded) return;
@@ -96,7 +97,7 @@ Page({
   async search() {
     if (this.unloaded || this.hidden || this.data.scanning || this.data.connectingId || this.data.connected) return;
     const attempt = ++this.scanAttempt;
-    this.update({ scanning: true, devices: [], errorText: '' });
+    this.update({ scanning: true, scanFinished: false, devices: [], errorText: '' });
     try { await this.client.scan(); }
     catch (error) { if (!this.unloaded && !this.hidden && attempt === this.scanAttempt && !this.data.connected && !this.data.connectingId) this.update({ scanning: false, errorText: message(error) }); }
   },
@@ -113,6 +114,34 @@ Page({
     } catch (error) {
       if (!this.unloaded && operation === this.operation) this.update({ connectingId: '', connected: false, errorText: message(error) });
     }
+  },
+  stopSearch() {
+    ++this.scanAttempt;
+    this.update({ scanning: false, scanFinished: true });
+    return this.client.stopScan();
+  },
+  toggleFineTune() { this.update({ fineTuneOpen: !this.data.fineTuneOpen }); },
+  toggleDetails() { this.update({ detailsOpen: !this.data.detailsOpen }); },
+  chooseStep(event) {
+    const stepSize = Number(event.currentTarget.dataset.step);
+    if ([1, 5, 10].includes(stepSize)) this.update({ stepSize });
+  },
+  nudge(event) {
+    const direction = Number(event.currentTarget.dataset.direction);
+    if (direction !== -1 && direction !== 1) return;
+    const angle = Math.min(this.data.maxAngle, Math.max(this.data.minAngle, this.data.angle + direction * this.data.stepSize));
+    if (angle !== this.data.angle) return this.transmit(false, angle);
+  },
+  editAngle(event) { this.update({ angleInput: event.detail.value }); },
+  submitAngle() {
+    if (!this.data.connected || this.data.sending) return;
+    const text = String(this.data.angleInput).trim();
+    const angle = Number(text);
+    if (!/^\d{1,3}$/.test(text) || !Number.isInteger(angle) || angle < this.data.minAngle || angle > this.data.maxAngle) {
+      this.update({ errorText: `请输入 ${this.data.minAngle}–${this.data.maxAngle} 之间的整数角度` });
+      return;
+    }
+    return this.transmit(false, angle);
   },
   async disconnect() {
     ++this.operation;
